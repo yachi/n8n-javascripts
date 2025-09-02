@@ -1,48 +1,62 @@
 // Simple test for main.js
 // This creates a standalone version for testing the n8n script
 
-// Helper function to format dates consistently (copied from main.js)
-function formatDate(dateStr) {
-  // Convert to string if it's a number
-  const str = String(dateStr);
+const fs = require('fs');
+
+// Import formatDate from main.js to avoid code duplication
+function getFormatDateFromMain() {
+  const mainCode = fs.readFileSync('./main.js', 'utf8');
  
-  // Handle ISO format (YYYY-MM-DDTHH:MM:SS) or compact format (YYYYMMDD)
-  if (str.includes('T')) {
-    return str.split('T')[0];
+  // Extract formatDate function from main.js
+  const formatDateMatch = mainCode.match(/function formatDate\(dateStr\) \{[\s\S]*?\n\}/);
+  if (!formatDateMatch) {
+    throw new Error('formatDate function not found in main.js');
   }
  
-  // Convert YYYYMMDD to YYYY-MM-DD
-  return `${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}`;
+  // Create and return the function
+  const formatDateCode = formatDateMatch[0];
+  const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+  const func = new Function('return ' + formatDateCode)();
+  return func;
 }
 
 // Test formatDate function for the n8n error fix
 function testDateFormatting() {
   console.log('🧪 Testing formatDate function (n8n error fix)');
   console.log('━'.repeat(40));
- 
-  const testCases = [
-    { input: 20241209, expected: '2024-12-09', desc: 'Numeric (n8n TARGETDATE)' },
-    { input: '20241209', expected: '2024-12-09', desc: 'String YYYYMMDD' },
-    { input: '2024-12-09T10:30:00', expected: '2024-12-09', desc: 'ISO with time' },
-  ];
- 
-  let allPassed = true;
-  testCases.forEach(test => {
-    const result = formatDate(test.input);
-    const passed = result === test.expected;
-    console.log(`${passed ? '✅' : '❌'} ${test.desc}: ${test.input} → ${result}`);
-    if (!passed) allPassed = false;
-  });
- 
-  console.log('━'.repeat(40));
-  console.log(allPassed ? '✅ All date tests passed!\n' : '❌ Some date tests failed!\n');
-  return allPassed;
+
+  try {
+    const formatDate = getFormatDateFromMain();
+   
+    const testCases = [
+      { input: 20241209, expected: '2024-12-09', desc: 'Numeric (n8n TARGETDATE)' },
+      { input: '20241209', expected: '2024-12-09', desc: 'String YYYYMMDD' },
+      { input: '2024-12-09T10:30:00', expected: '2024-12-09', desc: 'ISO with time' },
+    ];
+  
+    let allPassed = true;
+    testCases.forEach(test => {
+      const result = formatDate(test.input);
+      const passed = result === test.expected;
+      console.log(`${passed ? '✅' : '❌'} ${test.desc}: ${test.input} → ${result}`);
+      if (!passed) allPassed = false;
+    });
+  
+    console.log('━'.repeat(40));
+    console.log(allPassed ? '✅ All date tests passed!\n' : '❌ Some date tests failed!\n');
+    return allPassed;
+  } catch (error) {
+    console.log('❌ Failed to load formatDate from main.js:', error.message);
+    console.log('━'.repeat(40));
+    console.log('❌ Date tests failed!\n');
+    return false;
+  }
 }
 
 (async function() {
   // Run date formatting tests first
   testDateFormatting();
- 
+
   console.log('📺 Demo: main.js output format');
   console.log('😊 Clean and simple UK Green Energy Outlook');
   console.log('✅ Using facial expressions for ratings');
@@ -50,7 +64,7 @@ function testDateFormatting() {
 
   // Show sample output format
   console.log('🔄 Sample output format:\n');
- 
+
   const sampleMessage = `🌱 **UK Green Energy Outlook**
 
 📊 Yesterday: **67% green energy** 😊
