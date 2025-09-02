@@ -42,11 +42,22 @@ const wind14Meta = wind14Response;
 const demandMeta = demandResponse;
 const actualMeta = actualResponse;
 
-// Get CSV URLs
-const embeddedCsvUrl = embeddedMeta.result.resources[0].path;
-const wind14CsvUrl = wind14Meta.result.resources[0].path;
-const demandCsvUrl = demandMeta.result.resources[0].path;
-const actualCsvUrl = actualMeta.result.resources[0].path;
+// Get CSV URLs with safe access
+const embeddedCsvUrl = embeddedMeta?.result?.resources?.[0]?.path;
+const wind14CsvUrl = wind14Meta?.result?.resources?.[0]?.path;
+const demandCsvUrl = demandMeta?.result?.resources?.[0]?.path;
+const actualCsvUrl = actualMeta?.result?.resources?.[0]?.path;
+
+// Validate all CSV URLs exist
+if (!embeddedCsvUrl || !wind14CsvUrl || !demandCsvUrl || !actualCsvUrl) {
+  return [{
+    json: {
+      error: "Invalid API response",
+      message: "🔧 Data format unexpected. Please try again later.",
+      details: "Missing CSV URLs in API response"
+    }
+  }];
+}
 
 // Step 2: Fetch all CSV data
 let embeddedData, wind14Data, demandData, actualData;
