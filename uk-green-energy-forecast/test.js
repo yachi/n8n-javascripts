@@ -164,13 +164,25 @@ function testHelperFunctions() {
 
     let allPassed = true;
 
-    // Test getRatingEmoji
+    // Test getRatingEmoji (including edge cases)
     const emojiTests = [
       { input: 90, expected: '😍', desc: 'Excellent rating (90%)' },
+      { input: 80, expected: '😍', desc: 'Excellent boundary (80%)' },
+      { input: 79, expected: '😊', desc: 'Good boundary (79%)' },
       { input: 70, expected: '😊', desc: 'Good rating (70%)' },
+      { input: 60, expected: '😊', desc: 'Good boundary (60%)' },
+      { input: 59, expected: '😐', desc: 'Moderate boundary (59%)' },
       { input: 50, expected: '😐', desc: 'Moderate rating (50%)' },
+      { input: 40, expected: '😐', desc: 'Moderate boundary (40%)' },
+      { input: 39, expected: '😕', desc: 'Poor boundary (39%)' },
       { input: 30, expected: '😕', desc: 'Poor rating (30%)' },
-      { input: 10, expected: '😞', desc: 'Very poor rating (10%)' }
+      { input: 20, expected: '😕', desc: 'Poor boundary (20%)' },
+      { input: 19, expected: '😞', desc: 'Very poor boundary (19%)' },
+      { input: 10, expected: '😞', desc: 'Very poor rating (10%)' },
+      { input: 0, expected: '😞', desc: 'Zero rating (0%)' },
+      { input: -5, expected: '😞', desc: 'Negative rating (-5%)' },
+      { input: 100, expected: '😍', desc: 'Maximum rating (100%)' },
+      { input: 150, expected: '😍', desc: 'Above maximum (150%)' }
     ];
 
     emojiTests.forEach(test => {
@@ -180,10 +192,18 @@ function testHelperFunctions() {
       if (!passed) allPassed = false;
     });
 
-    // Test getDayName
+    // Test getDayName (including edge cases)
     const dayTests = [
       { input: '2024-12-09', expected: 'Mon', desc: 'Monday date' },
-      { input: '2024-12-10', expected: 'Tue', desc: 'Tuesday date' }
+      { input: '2024-12-10', expected: 'Tue', desc: 'Tuesday date' },
+      { input: '2024-12-11', expected: 'Wed', desc: 'Wednesday date' },
+      { input: '2024-12-12', expected: 'Thu', desc: 'Thursday date' },
+      { input: '2024-12-13', expected: 'Fri', desc: 'Friday date' },
+      { input: '2024-12-14', expected: 'Sat', desc: 'Saturday date' },
+      { input: '2024-12-15', expected: 'Sun', desc: 'Sunday date' },
+      { input: '2024-01-01', expected: 'Mon', desc: 'New Year date' },
+      { input: '2024-02-29', expected: 'Thu', desc: 'Leap year date' },
+      { input: '2025-01-01', expected: 'Wed', desc: 'Future year date' }
     ];
 
     dayTests.forEach(test => {
@@ -193,11 +213,45 @@ function testHelperFunctions() {
       if (!passed) allPassed = false;
     });
 
-    // Test getProgressBar
-    const barResult = getProgressBar(75);
-    const hasProgressBar = typeof barResult === 'string' && barResult.length === 10;
-    console.log(`${hasProgressBar ? '✅' : '❌'} Progress bar (75%): ${barResult}`);
-    if (!hasProgressBar) allPassed = false;
+    // Test getProgressBar (including edge cases)
+    const progressTests = [
+      { input: 0, desc: 'Empty progress (0%)', expectedLength: 10, expectedPattern: /^░{10}$/ },
+      { input: 10, desc: 'Low progress (10%)', expectedLength: 10, expectedPattern: /^█░{9}$/ },
+      { input: 50, desc: 'Half progress (50%)', expectedLength: 10, expectedPattern: /^█{5}░{5}$/ },
+      { input: 75, desc: 'High progress (75%)', expectedLength: 10, expectedPattern: /^█{7,8}░{2,3}$/ },
+      { input: 100, desc: 'Full progress (100%)', expectedLength: 10, expectedPattern: /^█{10}$/ }
+    ];
+
+    progressTests.forEach(test => {
+      const result = getProgressBar(test.input);
+      const lengthOk = result.length === test.expectedLength;
+      const patternOk = test.expectedPattern.test(result);
+      const passed = lengthOk && patternOk;
+      console.log(`${passed ? '✅' : '❌'} ${test.desc}: ${result}`);
+      if (!passed) allPassed = false;
+    });
+
+    // Test edge cases that should cause errors
+    const errorTests = [
+      { input: -10, desc: 'Negative progress (-10%)' },
+      { input: 150, desc: 'Over progress (150%)' }
+    ];
+
+    errorTests.forEach(test => {
+      try {
+        getProgressBar(test.input);
+        console.log(`❌ ${test.desc}: should have thrown error`);
+        allPassed = false;
+      } catch (error) {
+        console.log(`✅ ${test.desc}: correctly throws error`);
+      }
+    });
+
+    // Test custom width parameter
+    const customWidth = getProgressBar(50, 20);
+    const customWidthOk = customWidth.length === 20;
+    console.log(`${customWidthOk ? '✅' : '❌'} Custom width (50%, 20): ${customWidth}`);
+    if (!customWidthOk) allPassed = false;
 
     console.log('━'.repeat(40));
     console.log(allPassed ? '✅ All helper tests passed!\n' : '❌ Some helper tests failed!\n');
