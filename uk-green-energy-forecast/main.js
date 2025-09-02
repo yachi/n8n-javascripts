@@ -83,6 +83,17 @@ try {
   }];
 }
 
+// Helper function to format dates consistently
+function formatDate(dateStr) {
+  // Handle ISO format (YYYY-MM-DDTHH:MM:SS) or compact format (YYYYMMDD)
+  if (dateStr.includes('T')) {
+    return dateStr.split('T')[0];
+  }
+  // Convert YYYYMMDD to YYYY-MM-DD
+  const str = dateStr.toString();
+  return `${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}`;
+}
+
 // Step 3: Parse CSV data
 function parseCSV(text) {
   const lines = text.split('\n').filter(line => line.trim());
@@ -145,8 +156,7 @@ if (latestActualData.length > 0) {
 // Step 5: Process Day Ahead demand forecasts by date
 const demandByDate = {};
 demand.forEach(row => {
-  const dateStr = row.TARGETDATE.toString();
-  const date = `${dateStr.slice(0,4)}-${dateStr.slice(4,6)}-${dateStr.slice(6,8)}`;
+  const date = formatDate(row.TARGETDATE);
   
   if (!demandByDate[date]) {
     demandByDate[date] = [];
@@ -169,7 +179,7 @@ wind14.forEach(row => {
 // Step 7: Process embedded forecasts by date and period
 const embeddedByDatePeriod = {};
 embedded.forEach(row => {
-  const date = row.SETTLEMENT_DATE.split('T')[0];
+  const date = formatDate(row.SETTLEMENT_DATE);
   const key = `${date}_${row.SETTLEMENT_PERIOD}`;
   embeddedByDatePeriod[key] = {
     wind: row.EMBEDDED_WIND_FORECAST || 0,
