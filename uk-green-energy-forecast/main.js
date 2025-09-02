@@ -187,6 +187,68 @@ embedded.forEach(row => {
   };
 });
 
+// Helper function to calculate daily renewable totals
+function calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod) {
+  let totalEmbeddedWind = 0;
+  let totalLargeWind = 0;
+  let totalSolar = 0;
+  let periodCount = 0;
+  
+  for (let period = 1; period <= PERIODS_PER_DAY; period++) {
+    const key = `${date}_${period}`;
+    
+    const embeddedData = embeddedByDatePeriod[key];
+    if (embeddedData) {
+      totalEmbeddedWind += embeddedData.wind;
+      totalSolar += embeddedData.solar;
+    }
+    
+    const largeWind = wind14ByDatePeriod[key] || 0;
+    totalLargeWind += largeWind;
+    
+    if (embeddedData || largeWind > 0) {
+      periodCount++;
+    }
+  }
+  
+  return {
+    totalEmbeddedWind,
+    totalLargeWind,
+    totalSolar,
+    periodCount
+  };
+}
+
+// Helper function to create daily forecast
+function createDailyForecast(date, renewables, demandByDate, latestActualScore) {
+  const { totalEmbeddedWind, totalLargeWind, totalSolar, periodCount } = renewables;
+  
+  if (periodCount === 0) return null;
+  
+  const avgEmbeddedWind = totalEmbeddedWind / periodCount;
+  const avgLargeWind = totalLargeWind / periodCount;
+  const avgSolar = totalSolar / periodCount;
+  const avgTotalWind = avgEmbeddedWind + avgLargeWind;
+  const totalRenewable = avgTotalWind + avgSolar;
+  
+  const avgDemand = demandByDate[date] || 
+    (latestActualScore ? latestActualScore.avgDemand : DEFAULT_DEMAND_MW);
+  
+  const greenScore = Math.round((totalRenewable / avgDemand) * 100);
+  
+  return {
+    date: date,
+    greenScore: greenScore,
+    avgEmbeddedWind: Math.round(avgEmbeddedWind),
+    avgLargeWind: Math.round(avgLargeWind),
+    avgTotalWind: Math.round(avgTotalWind),
+    avgSolar: Math.round(avgSolar),
+    avgDemand: Math.round(avgDemand),
+    totalRenewableMWh: Math.round((totalEmbeddedWind + totalLargeWind + totalSolar) * PERIOD_TO_MWH),
+    totalDemandMWh: Math.round(avgDemand * PERIODS_PER_DAY * PERIOD_TO_MWH)
+  };
+}
+
 // Step 8: Create 7-day forecast
 const today = new Date();
 const weekDates = [];
@@ -199,54 +261,11 @@ for (let i = 0; i < 7; i++) {
 const weeklyForecast = [];
 
 weekDates.forEach(date => {
-  let totalEmbeddedWind = 0;
-  let totalLargeWind = 0;
-  let totalSolar = 0;
-  let periodCount = 0;
+  const renewables = calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod);
+  const forecast = createDailyForecast(date, renewables, demandByDate, latestActualScore);
   
-  // Sum all periods for the day
-  for (let period = 1; period <= PERIODS_PER_DAY; period++) {
-    const key = `${date}_${period}`;
-    
-    // Get embedded wind and solar
-    const embeddedData = embeddedByDatePeriod[key];
-    if (embeddedData) {
-      totalEmbeddedWind += embeddedData.wind;
-      totalSolar += embeddedData.solar;
-    }
-    
-    // Get large wind
-    const largeWind = wind14ByDatePeriod[key] || 0;
-    totalLargeWind += largeWind;
-    
-    if (embeddedData || largeWind > 0) {
-      periodCount++;
-    }
-  }
-  
-  if (periodCount > 0) {
-    const avgEmbeddedWind = totalEmbeddedWind / periodCount;
-    const avgLargeWind = totalLargeWind / periodCount;
-    const avgSolar = totalSolar / periodCount;
-    const avgTotalWind = avgEmbeddedWind + avgLargeWind;
-    const totalRenewable = avgTotalWind + avgSolar;
-    
-    // Get demand forecast for this date
-    const avgDemand = demandByDate[date] || (latestActualScore ? latestActualScore.avgDemand : DEFAULT_DEMAND_MW);
-    
-    const greenScore = Math.round((totalRenewable / avgDemand) * 100);
-    
-    weeklyForecast.push({
-      date: date,
-      greenScore: greenScore,
-      avgEmbeddedWind: Math.round(avgEmbeddedWind),
-      avgLargeWind: Math.round(avgLargeWind),
-      avgTotalWind: Math.round(avgTotalWind),
-      avgSolar: Math.round(avgSolar),
-      avgDemand: Math.round(avgDemand),
-      totalRenewableMWh: Math.round((totalEmbeddedWind + totalLargeWind + totalSolar) * PERIOD_TO_MWH),
-      totalDemandMWh: Math.round(avgDemand * PERIODS_PER_DAY * PERIOD_TO_MWH)
-    });
+  if (forecast) {
+    weeklyForecast.push(forecast);
   }
 });
 
