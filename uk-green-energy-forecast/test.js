@@ -113,6 +113,84 @@ function testCSVParsing() {
   }
 }
 
+// Test performance characteristics
+function testPerformance() {
+  console.log('🧪 Testing performance characteristics');
+  console.log('━'.repeat(40));
+
+  let allPassed = true;
+
+  try {
+    const parseCSV = getFunctionFromMain('parseCSV');
+    const formatDate = getFunctionFromMain('formatDate');
+    const getRatingEmoji = getFunctionFromMain('getRatingEmoji');
+    const getProgressBar = getFunctionFromMain('getProgressBar');
+
+    // Performance test: parseCSV with large dataset
+    const largeCsvData = 'col1,col2,col3\n' + Array(1000).fill(0).map((_, i) => 
+      `value${i},${i * 2},${i * 3.14159}`).join('\n');
+    
+    const start1 = performance.now();
+    const result1 = parseCSV(largeCsvData);
+    const end1 = performance.now();
+    const csvTime = end1 - start1;
+    
+    const csvPerformanceOk = csvTime < 100 && result1.length === 1000; // Should be under 100ms
+    console.log(`${csvPerformanceOk ? '✅' : '❌'} parseCSV (1000 rows): ${csvTime.toFixed(2)}ms`);
+    if (!csvPerformanceOk) allPassed = false;
+
+    // Performance test: formatDate in bulk
+    const dates = ['20241209', '2024-12-09T10:30:00', 20241210, '2025-01-01T00:00:00'];
+    const start2 = performance.now();
+    for (let i = 0; i < 1000; i++) {
+      dates.forEach(date => formatDate(date));
+    }
+    const end2 = performance.now();
+    const dateTime = end2 - start2;
+
+    const datePerformanceOk = dateTime < 50; // Should be under 50ms for 4000 operations
+    console.log(`${datePerformanceOk ? '✅' : '❌'} formatDate (4000 ops): ${dateTime.toFixed(2)}ms`);
+    if (!datePerformanceOk) allPassed = false;
+
+    // Performance test: emoji and progress bar generation
+    const start3 = performance.now();
+    for (let i = 0; i <= 100; i++) {
+      getRatingEmoji(i);
+      getProgressBar(i);
+    }
+    const end3 = performance.now();
+    const uiTime = end3 - start3;
+
+    const uiPerformanceOk = uiTime < 10; // Should be under 10ms for 202 operations
+    console.log(`${uiPerformanceOk ? '✅' : '❌'} UI helpers (202 ops): ${uiTime.toFixed(2)}ms`);
+    if (!uiPerformanceOk) allPassed = false;
+
+    // Memory usage test (rough estimation)
+    const memBefore = process.memoryUsage().heapUsed;
+    const testData = Array(100).fill(0).map(() => parseCSV('a,b,c\n1,2,3\n4,5,6'));
+    const memAfter = process.memoryUsage().heapUsed;
+    const memDelta = (memAfter - memBefore) / 1024 / 1024; // MB
+
+    const memoryOk = memDelta < 5; // Should use less than 5MB
+    console.log(`${memoryOk ? '✅' : '❌'} Memory usage (100 parses): ${memDelta.toFixed(2)}MB`);
+    if (!memoryOk) allPassed = false;
+
+    // Performance benchmarks summary
+    console.log('\n📋 Performance Benchmarks:');
+    console.log(`   • CSV parsing: ${(csvTime / 1000).toFixed(3)}ms per row`);
+    console.log(`   • Date formatting: ${(dateTime / 4000).toFixed(3)}ms per operation`);
+    console.log(`   • UI generation: ${(uiTime / 202).toFixed(3)}ms per operation`);
+    
+  } catch (error) {
+    console.log(`❌ Performance tests failed: ${error.message}`);
+    allPassed = false;
+  }
+
+  console.log('━'.repeat(40));
+  console.log(allPassed ? '✅ All performance tests passed!\n' : '❌ Some performance tests failed!\n');
+  return allPassed;
+}
+
 // Test error handling paths
 function testErrorHandling() {
   console.log('🧪 Testing error handling');
@@ -265,20 +343,26 @@ function testHelperFunctions() {
 }
 
 (async function() {
-  // Run all tests
+  // Run all tests with timing
+  const overallStart = performance.now();
   console.log('🚀 Running all tests...\n');
  
   const results = [];
   results.push(testDateFormatting());
   results.push(testCSVParsing());
+  results.push(testPerformance());
   results.push(testErrorHandling());
   results.push(testHelperFunctions());
+ 
+  const overallEnd = performance.now();
+  const totalTime = overallEnd - overallStart;
  
   // Summary
   const passed = results.filter(r => r).length;
   const total = results.length;
   console.log('━'.repeat(50));
   console.log(`📊 Test Summary: ${passed}/${total} test suites passed`);
+  console.log(`⏱️  Total execution time: ${totalTime.toFixed(2)}ms`);
  
   if (passed === total) {
     console.log('🎉 All tests passed!\n');
