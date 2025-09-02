@@ -95,10 +95,13 @@ function parseCSV(text) {
   const data = [];
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
+    // Improved regex to handle CSV with embedded commas in quoted fields
+    const values = lines[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+      .map(v => v.replace(/^"|"$/g, '').trim());
     const row = {};
     headers.forEach((header, index) => {
-      let value = values[index] ? values[index].replace(/"/g, '').trim() : '';
+      let value = values[index] || '';
+      // Convert to number if numeric
       if (!isNaN(value) && value !== '') {
         value = parseFloat(value);
       }
