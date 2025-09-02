@@ -8,12 +8,34 @@ const wind14Url = 'https://api.neso.energy/api/3/action/datapackage_show?id=14-d
 const demandUrl = 'https://api.neso.energy/api/3/action/datapackage_show?id=1-day-ahead-demand-forecast';
 const actualUrl = 'https://api.neso.energy/api/3/action/datapackage_show?id=daily-demand-update';
 
-const [embeddedResponse, wind14Response, demandResponse, actualResponse] = await Promise.all([
-  this.helpers.request({ method: 'GET', url: embeddedUrl, json: true }),
-  this.helpers.request({ method: 'GET', url: wind14Url, json: true }),
-  this.helpers.request({ method: 'GET', url: demandUrl, json: true }),
-  this.helpers.request({ method: 'GET', url: actualUrl, json: true })
-]);
+async function requestWithRetry(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await this.helpers.request({ method: 'GET', url, ...options });
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+}
+
+let embeddedResponse, wind14Response, demandResponse, actualResponse;
+try {
+  [embeddedResponse, wind14Response, demandResponse, actualResponse] = await Promise.all([
+    requestWithRetry.call(this, embeddedUrl, { json: true }),
+    requestWithRetry.call(this, wind14Url, { json: true }),
+    requestWithRetry.call(this, demandUrl, { json: true }),
+    requestWithRetry.call(this, actualUrl, { json: true })
+  ]);
+} catch (error) {
+  return [{
+    json: {
+      error: "API request failed",
+      message: "🔧 Data sources temporarily unavailable. Please try again later.",
+      details: error.message
+    }
+  }];
+}
 
 const embeddedMeta = embeddedResponse;
 const wind14Meta = wind14Response;
@@ -27,12 +49,23 @@ const demandCsvUrl = demandMeta.result.resources[0].path;
 const actualCsvUrl = actualMeta.result.resources[0].path;
 
 // Step 2: Fetch all CSV data
-const [embeddedData, wind14Data, demandData, actualData] = await Promise.all([
-  this.helpers.request({ method: 'GET', url: embeddedCsvUrl }),
-  this.helpers.request({ method: 'GET', url: wind14CsvUrl }),
-  this.helpers.request({ method: 'GET', url: demandCsvUrl }),
-  this.helpers.request({ method: 'GET', url: actualCsvUrl })
-]);
+let embeddedData, wind14Data, demandData, actualData;
+try {
+  [embeddedData, wind14Data, demandData, actualData] = await Promise.all([
+    requestWithRetry.call(this, embeddedCsvUrl, {}),
+    requestWithRetry.call(this, wind14CsvUrl, {}),
+    requestWithRetry.call(this, demandCsvUrl, {}),
+    requestWithRetry.call(this, actualCsvUrl, {})
+  ]);
+} catch (error) {
+  return [{
+    json: {
+      error: "CSV data fetch failed",
+      message: "🔧 Unable to fetch forecast data. Please try again later.",
+      details: error.message
+    }
+  }];
+}
 
 const embeddedText = embeddedData;
 const wind14Text = wind14Data;
