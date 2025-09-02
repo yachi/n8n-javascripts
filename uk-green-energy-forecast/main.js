@@ -2,6 +2,11 @@
 // Green Score = (Embedded Wind + Large Wind + Solar) / Demand * 100
 // Uses: Embedded forecasts + 14-day wind forecasts + demand forecasts
 
+// Constants
+const PERIODS_PER_DAY = 48;
+const DEFAULT_DEMAND_MW = 25000;
+const PERIOD_TO_MWH = 0.5; // 30-minute periods to hours
+
 // Step 1: Fetch all four datasets
 const embeddedUrl = 'https://api.neso.energy/api/3/action/datapackage_show?id=embedded-wind-and-solar-forecasts';
 const wind14Url = 'https://api.neso.energy/api/3/action/datapackage_show?id=14-days-ahead-wind-forecasts';
@@ -191,8 +196,8 @@ weekDates.forEach(date => {
   let totalSolar = 0;
   let periodCount = 0;
   
-  // Sum all 48 periods for the day
-  for (let period = 1; period <= 48; period++) {
+  // Sum all periods for the day
+  for (let period = 1; period <= PERIODS_PER_DAY; period++) {
     const key = `${date}_${period}`;
     
     // Get embedded wind and solar
@@ -219,7 +224,7 @@ weekDates.forEach(date => {
     const totalRenewable = avgTotalWind + avgSolar;
     
     // Get demand forecast for this date
-    const avgDemand = demandByDate[date] || (latestActualScore ? latestActualScore.avgDemand : 25000);
+    const avgDemand = demandByDate[date] || (latestActualScore ? latestActualScore.avgDemand : DEFAULT_DEMAND_MW);
     
     const greenScore = Math.round((totalRenewable / avgDemand) * 100);
     
@@ -231,8 +236,8 @@ weekDates.forEach(date => {
       avgTotalWind: Math.round(avgTotalWind),
       avgSolar: Math.round(avgSolar),
       avgDemand: Math.round(avgDemand),
-      totalRenewableMWh: Math.round((totalEmbeddedWind + totalLargeWind + totalSolar) * 0.5),
-      totalDemandMWh: Math.round(avgDemand * 48 * 0.5)
+      totalRenewableMWh: Math.round((totalEmbeddedWind + totalLargeWind + totalSolar) * PERIOD_TO_MWH),
+      totalDemandMWh: Math.round(avgDemand * PERIODS_PER_DAY * PERIOD_TO_MWH)
     });
   }
 });
