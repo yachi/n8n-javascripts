@@ -85,12 +85,15 @@ try {
 
 // Helper function to format dates consistently
 function formatDate(dateStr) {
+  // Convert to string if it's a number
+  const str = String(dateStr);
+ 
   // Handle ISO format (YYYY-MM-DDTHH:MM:SS) or compact format (YYYYMMDD)
-  if (dateStr.includes('T')) {
-    return dateStr.split('T')[0];
+  if (str.includes('T')) {
+    return str.split('T')[0];
   }
+ 
   // Convert YYYYMMDD to YYYY-MM-DD
-  const str = dateStr.toString();
   return `${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}`;
 }
 
@@ -99,7 +102,7 @@ function parseCSV(text) {
   const lines = text.split('\n').filter(line => line.trim());
   const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
   const data = [];
-  
+ 
   for (let i = 1; i < lines.length; i++) {
     // Improved regex to handle CSV with embedded commas in quoted fields
     const values = lines[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
@@ -138,11 +141,11 @@ if (latestActualData.length > 0) {
     acc.count++;
     return acc;
   }, { demand: 0, embeddedWind: 0, solar: 0, count: 0 });
-  
+ 
   if (totals.demand > 0) {
     const totalRenewable = totals.embeddedWind + totals.solar;
     const greenScore = Math.round((totalRenewable / totals.demand) * 100);
-    
+   
     latestActualScore = {
       date: latestActualDate,
       greenScore: greenScore,
@@ -157,7 +160,7 @@ if (latestActualData.length > 0) {
 const demandByDate = {};
 demand.forEach(row => {
   const date = formatDate(row.TARGETDATE);
-  
+ 
   if (!demandByDate[date]) {
     demandByDate[date] = [];
   }
@@ -193,24 +196,24 @@ function calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod
   let totalLargeWind = 0;
   let totalSolar = 0;
   let periodCount = 0;
-  
+ 
   for (let period = 1; period <= PERIODS_PER_DAY; period++) {
     const key = `${date}_${period}`;
-    
+   
     const embeddedData = embeddedByDatePeriod[key];
     if (embeddedData) {
       totalEmbeddedWind += embeddedData.wind;
       totalSolar += embeddedData.solar;
     }
-    
+   
     const largeWind = wind14ByDatePeriod[key] || 0;
     totalLargeWind += largeWind;
-    
+   
     if (embeddedData || largeWind > 0) {
       periodCount++;
     }
   }
-  
+ 
   return {
     totalEmbeddedWind,
     totalLargeWind,
@@ -222,20 +225,20 @@ function calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod
 // Helper function to create daily forecast
 function createDailyForecast(date, renewables, demandByDate, latestActualScore) {
   const { totalEmbeddedWind, totalLargeWind, totalSolar, periodCount } = renewables;
-  
+ 
   if (periodCount === 0) return null;
-  
+ 
   const avgEmbeddedWind = totalEmbeddedWind / periodCount;
   const avgLargeWind = totalLargeWind / periodCount;
   const avgSolar = totalSolar / periodCount;
   const avgTotalWind = avgEmbeddedWind + avgLargeWind;
   const totalRenewable = avgTotalWind + avgSolar;
-  
-  const avgDemand = demandByDate[date] || 
+ 
+  const avgDemand = demandByDate[date] ||
     (latestActualScore ? latestActualScore.avgDemand : DEFAULT_DEMAND_MW);
-  
+ 
   const greenScore = Math.round((totalRenewable / avgDemand) * 100);
-  
+ 
   return {
     date: date,
     greenScore: greenScore,
@@ -263,20 +266,20 @@ const weeklyForecast = [];
 weekDates.forEach(date => {
   const renewables = calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod);
   const forecast = createDailyForecast(date, renewables, demandByDate, latestActualScore);
-  
+ 
   if (forecast) {
     weeklyForecast.push(forecast);
   }
 });
 
 // Step 9: Calculate statistics
-const avgWeekScore = weeklyForecast.length > 0 
+const avgWeekScore = weeklyForecast.length > 0
   ? Math.round(weeklyForecast.reduce((sum, day) => sum + day.greenScore, 0) / weeklyForecast.length)
   : 0;
 
-const bestDay = weeklyForecast.reduce((best, day) => 
+const bestDay = weeklyForecast.reduce((best, day) =>
   !best || day.greenScore > best.greenScore ? day : best, null);
-const worstDay = weeklyForecast.reduce((worst, day) => 
+const worstDay = weeklyForecast.reduce((worst, day) =>
   !worst || day.greenScore < worst.greenScore ? day : worst, null);
 
 // Step 10: Helper functions
@@ -324,7 +327,7 @@ weeklyForecast.forEach(day => {
   const dayName = getDayName(day.date);
   const emoji = getRatingEmoji(day.greenScore);
   const bar = getProgressBar(day.greenScore);
-  
+ 
   telegramMessage += `**${dayName}** ${emoji} ${day.greenScore}% ${bar}\n`;
 });
 
@@ -364,7 +367,7 @@ return [{
     worstDay: worstDay ? { date: worstDay.date, score: worstDay.greenScore } : null,
     dataSources: [
       "Embedded Wind & Solar Forecasts (14-day)",
-      "14 Days Ahead Wind Forecasts", 
+      "14 Days Ahead Wind Forecasts",
       "Day Ahead National Demand Forecasts (time-varying 18-28GW)",
       "Daily Demand Update (actual data)"
     ],
