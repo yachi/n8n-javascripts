@@ -145,7 +145,7 @@ if (latestActualData.length > 0) {
   if (totals.demand > 0) {
     const totalRenewable = totals.embeddedWind + totals.solar;
     const greenScore = Math.round((totalRenewable / totals.demand) * 100);
-  
+ 
     latestActualScore = {
       date: latestActualDate,
       greenScore: greenScore,
@@ -199,16 +199,16 @@ function calculateDailyRenewables(date, embeddedByDatePeriod, wind14ByDatePeriod
 
   for (let period = 1; period <= PERIODS_PER_DAY; period++) {
     const key = `${date}_${period}`;
-  
+ 
     const embeddedData = embeddedByDatePeriod[key];
     if (embeddedData) {
       totalEmbeddedWind += embeddedData.wind;
       totalSolar += embeddedData.solar;
     }
-  
+ 
     const largeWind = wind14ByDatePeriod[key] || 0;
     totalLargeWind += largeWind;
-  
+ 
     if (embeddedData || largeWind > 0) {
       periodCount++;
     }

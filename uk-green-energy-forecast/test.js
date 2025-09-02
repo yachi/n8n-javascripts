@@ -7,9 +7,15 @@ const fs = require('fs');
 function getFunctionFromMain(functionName) {
   const mainCode = fs.readFileSync('./main.js', 'utf8');
 
-  // Extract function from main.js
-  const funcMatch = mainCode.match(new RegExp(`function ${functionName}\\([^)]*\\) \\{[\\s\\S]*?\\n\\}`));
-  if (!funcMatch) {
+  // Extract function from main.js with improved regex for complex definitions
+  // Handles: multiline params, default params, destructuring, comments, etc.
+  const funcPattern = new RegExp(
+    `function\\s+${functionName}\\s*\\([^{]*?\\)\\s*\\{[\\s\\S]*?^\\}`,
+    'gm'
+  );
+ 
+  const funcMatch = mainCode.match(funcPattern);
+  if (!funcMatch || funcMatch.length === 0) {
     throw new Error(`${functionName} function not found in main.js`);
   }
 
@@ -26,13 +32,13 @@ function testDateFormatting() {
 
   try {
     const formatDate = getFunctionFromMain('formatDate');
-   
+  
     const testCases = [
       { input: 20241209, expected: '2024-12-09', desc: 'Numeric (n8n TARGETDATE)' },
       { input: '20241209', expected: '2024-12-09', desc: 'String YYYYMMDD' },
       { input: '2024-12-09T10:30:00', expected: '2024-12-09', desc: 'ISO with time' },
     ];
-  
+ 
     let allPassed = true;
     testCases.forEach(test => {
       const result = formatDate(test.input);
@@ -40,7 +46,7 @@ function testDateFormatting() {
       console.log(`${passed ? '✅' : '❌'} ${test.desc}: ${test.input} → ${result}`);
       if (!passed) allPassed = false;
     });
-  
+ 
     console.log('━'.repeat(40));
     console.log(allPassed ? '✅ All date tests passed!\n' : '❌ Some date tests failed!\n');
     return allPassed;
@@ -126,6 +132,20 @@ function testErrorHandling() {
     if (!passed) allPassed = false;
   }
 
+  // Test regex robustness with multiline function definitions 
+  try {
+    const calculateDailyRenewables = getFunctionFromMain('calculateDailyRenewables');
+    // Test that complex multiline function can be extracted (don't execute due to dependencies)
+    const isFunction = typeof calculateDailyRenewables === 'function';
+    const hasCorrectName = calculateDailyRenewables.name === 'calculateDailyRenewables';
+    const passed = isFunction && hasCorrectName;
+    console.log(`${passed ? '✅' : '❌'} Complex multiline function extraction: ${passed ? 'working' : 'failed'}`);
+    if (!passed) allPassed = false;
+  } catch (error) {
+    console.log(`❌ Complex function extraction failed: ${error.message}`);
+    allPassed = false;
+  }
+
   console.log('━'.repeat(40));
   console.log(allPassed ? '✅ All error tests passed!\n' : '❌ Some error tests failed!\n');
   return allPassed;
@@ -193,19 +213,19 @@ function testHelperFunctions() {
 (async function() {
   // Run all tests
   console.log('🚀 Running all tests...\n');
-  
+ 
   const results = [];
   results.push(testDateFormatting());
   results.push(testCSVParsing());
   results.push(testErrorHandling());
   results.push(testHelperFunctions());
-  
+ 
   // Summary
   const passed = results.filter(r => r).length;
   const total = results.length;
   console.log('━'.repeat(50));
   console.log(`📊 Test Summary: ${passed}/${total} test suites passed`);
-  
+ 
   if (passed === total) {
     console.log('🎉 All tests passed!\n');
   } else {
