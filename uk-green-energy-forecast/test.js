@@ -107,6 +107,31 @@ function testCSVParsing() {
   }
 }
 
+// Test error handling paths
+function testErrorHandling() {
+  console.log('🧪 Testing error handling');
+  console.log('━'.repeat(40));
+
+  let allPassed = true;
+
+  // Test missing function handling
+  try {
+    getFunctionFromMain('nonExistentFunction');
+    console.log('❌ Should have thrown error for missing function');
+    allPassed = false;
+  } catch (error) {
+    const expectedMessage = 'nonExistentFunction function not found in main.js';
+    const passed = error.message === expectedMessage;
+    console.log(`${passed ? '✅' : '❌'} Missing function error: ${passed ? 'correct' : 'wrong'} message`);
+    if (!passed) allPassed = false;
+  }
+
+  console.log('━'.repeat(40));
+  console.log(allPassed ? '✅ All error tests passed!\n' : '❌ Some error tests failed!\n');
+  return allPassed;
+}
+
+
 // Test helper functions
 function testHelperFunctions() {
   console.log('🧪 Testing helper functions');
@@ -172,6 +197,7 @@ function testHelperFunctions() {
   const results = [];
   results.push(testDateFormatting());
   results.push(testCSVParsing());
+  results.push(testErrorHandling());
   results.push(testHelperFunctions());
   
   // Summary
