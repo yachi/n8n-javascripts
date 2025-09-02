@@ -205,11 +205,11 @@ const worstDay = weeklyForecast.reduce((worst, day) =>
 
 // Step 10: Helper functions
 function getRatingEmoji(score) {
-  if (score >= 80) return "🌟";
-  if (score >= 60) return "✅";
-  if (score >= 40) return "⚡";
-  if (score >= 20) return "⚠️";
-  return "🔴";
+  if (score >= 80) return "😍";
+  if (score >= 60) return "😊";
+  if (score >= 40) return "😐";
+  if (score >= 20) return "😕";
+  return "😞";
 }
 
 function getRatingText(score) {
@@ -233,86 +233,41 @@ function getProgressBar(score, width = 10) {
 }
 
 // Step 11: Generate Telegram message
-let telegramMessage = `🇬🇧 **UK Energy Ultimate Forecast**\n`;
-telegramMessage += `📅 ${weekDates[0]} to ${weekDates[6]}\n`;
-telegramMessage += `🌪️ **Complete Wind Data** = Embedded + Large Wind Farms\n\n`;
+let telegramMessage = `🌱 **UK Green Energy Outlook**\n`;
 
 // Latest actual data
 if (latestActualScore) {
-  telegramMessage += `📊 **Latest Actual (${latestActualDate}):**\n`;
-  telegramMessage += `${getRatingEmoji(latestActualScore.greenScore)} **${latestActualScore.greenScore}% renewable** (${getRatingText(latestActualScore.greenScore)})\n`;
-  telegramMessage += `💨 ${latestActualScore.avgEmbeddedWind}MW embedded wind | ☀️ ${latestActualScore.avgSolar}MW solar\n\n`;
+  telegramMessage += `📊 Yesterday: **${latestActualScore.greenScore}% green energy** ${getRatingEmoji(latestActualScore.greenScore)}\n\n`;
 }
 
 // Weekly average
-telegramMessage += `📈 **Week Average: ${avgWeekScore}% renewable** ${getRatingEmoji(avgWeekScore)}\n\n`;
+telegramMessage += `📈 This week: **${avgWeekScore}% renewable** ${getRatingEmoji(avgWeekScore)}\n\n`;
 
 // Daily forecast
-telegramMessage += `📅 **Daily Forecast:**\n`;
 weeklyForecast.forEach(day => {
   const dayName = getDayName(day.date);
   const emoji = getRatingEmoji(day.greenScore);
   const bar = getProgressBar(day.greenScore);
   
-  telegramMessage += `• **${dayName} ${day.date.slice(5)}:** ${emoji} **${day.greenScore}%** ${bar}\n`;
-  telegramMessage += `  🌪️ ${day.avgTotalWind}MW wind (${day.avgEmbeddedWind}MW + ${day.avgLargeWind}MW)\n`;
-  telegramMessage += `  ☀️ ${day.avgSolar}MW solar | 📊 ${day.avgDemand}MW demand\n`;
+  telegramMessage += `**${dayName}** ${emoji} ${day.greenScore}% ${bar}\n`;
 });
 
 // Best and worst days
 if (bestDay && worstDay && weeklyForecast.length > 1) {
-  telegramMessage += `\n🏆 **Best Day:** ${getDayName(bestDay.date)} (${bestDay.greenScore}%)\n`;
-  telegramMessage += `📉 **Challenging Day:** ${getDayName(worstDay.date)} (${worstDay.greenScore}%)\n`;
+  telegramMessage += `\n🏆 Best: ${getDayName(bestDay.date)} (${bestDay.greenScore}%)\n`;
+  telegramMessage += `⚡ Lowest: ${getDayName(worstDay.date)} (${worstDay.greenScore}%)\n`;
 }
 
-// Week analysis
-telegramMessage += `\n💡 **Week Outlook:**\n`;
+// Simple week summary
+telegramMessage += `\n💭 `;
 if (avgWeekScore >= 60) {
-  telegramMessage += `Excellent week ahead! Strong renewable generation expected.`;
+  telegramMessage += `Great week for renewables ahead!`;
 } else if (avgWeekScore >= 40) {
-  telegramMessage += `Good renewable week. Strong wind and solar generation forecast.`;
-} else if (avgWeekScore >= 20) {
-  telegramMessage += `Moderate renewable week. Mixed generation expected.`;
+  telegramMessage += `Good renewable energy week expected.`;
 } else {
-  telegramMessage += `Challenging week for renewables. Lower generation forecast.`;
+  telegramMessage += `Mixed week - some good green days coming.`;
 }
 
-// Weekly patterns
-const excellentDays = weeklyForecast.filter(d => d.greenScore >= 80).length;
-const goodDays = weeklyForecast.filter(d => d.greenScore >= 60).length;
-const highRenewableDays = weeklyForecast.filter(d => d.greenScore >= 50).length;
-const veryWindyDays = weeklyForecast.filter(d => d.avgTotalWind > 8000).length;
-const windyDays = weeklyForecast.filter(d => d.avgTotalWind > 5000).length;
-const solarDays = weeklyForecast.filter(d => d.avgSolar > 2000).length;
-
-telegramMessage += `\n\n🌱 **Weekly Patterns:**\n`;
-if (excellentDays > 0) telegramMessage += `• ${excellentDays}/7 excellent days (80%+ renewable)\n`;
-if (goodDays > 0) telegramMessage += `• ${goodDays}/7 good days (60%+ renewable)\n`;
-telegramMessage += `• ${highRenewableDays}/7 days with 50%+ renewables\n`;
-telegramMessage += `• ${veryWindyDays}/7 very windy days (>8000MW)\n`;
-telegramMessage += `• ${windyDays}/7 windy days (>5000MW)\n`;
-telegramMessage += `• ${solarDays}/7 bright days (>2000MW solar)\n`;
-
-// Weekly totals and breakdown
-if (weeklyForecast.length > 0) {
-  const weekRenewableGWh = weeklyForecast.reduce((sum, day) => sum + day.totalRenewableMWh, 0) / 1000;
-  const weekDemandGWh = weeklyForecast.reduce((sum, day) => sum + day.totalDemandMWh, 0) / 1000;
-  const avgTotalWind = weeklyForecast.reduce((sum, day) => sum + day.avgTotalWind, 0) / weeklyForecast.length;
-  const avgEmbedded = weeklyForecast.reduce((sum, day) => sum + day.avgEmbeddedWind, 0) / weeklyForecast.length;
-  const avgLarge = weeklyForecast.reduce((sum, day) => sum + day.avgLargeWind, 0) / weeklyForecast.length;
-  
-  telegramMessage += `\n📊 **Week Totals:**\n`;
-  telegramMessage += `• Renewable Generation: ${weekRenewableGWh.toFixed(0)} GWh\n`;
-  telegramMessage += `• Total Demand: ${weekDemandGWh.toFixed(0)} GWh\n`;
-  telegramMessage += `• Overall Green Ratio: ${Math.round((weekRenewableGWh/weekDemandGWh)*100)}%\n`;
-  
-  telegramMessage += `\n🌪️ **Wind Generation Mix:**\n`;
-  telegramMessage += `• Total Wind Average: ${Math.round(avgTotalWind)}MW\n`;
-  telegramMessage += `• Embedded Wind: ${Math.round(avgEmbedded)}MW (${Math.round(avgEmbedded/(avgTotalWind||1)*100)}%)\n`;
-  telegramMessage += `• Large Wind Farms: ${Math.round(avgLarge)}MW (${Math.round(avgLarge/(avgTotalWind||1)*100)}%)\n`;
-}
-
-telegramMessage += `\n#UKEnergy #WindPower #SolarPower #GreenEnergy`;
 
 // Return for n8n (must be an array of objects)
 return [{
