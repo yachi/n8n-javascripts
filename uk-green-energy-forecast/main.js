@@ -83,11 +83,6 @@ try {
   }];
 }
 
-const embeddedText = embeddedData;
-const wind14Text = wind14Data;
-const demandText = demandData;
-const actualText = actualData;
-
 // Step 3: Parse CSV data
 function parseCSV(text) {
   const lines = text.split('\n').filter(line => line.trim());
@@ -112,10 +107,10 @@ function parseCSV(text) {
   return data;
 }
 
-const embedded = parseCSV(embeddedText);
-const wind14 = parseCSV(wind14Text);
-const demand = parseCSV(demandText);
-const actual = parseCSV(actualText);
+const embedded = parseCSV(embeddedData);
+const wind14 = parseCSV(wind14Data);
+const demand = parseCSV(demandData);
+const actual = parseCSV(actualData);
 
 // Step 4: Get latest actual data for comparison
 const actualDataFiltered = actual.filter(row => row.FORECAST_ACTUAL_INDICATOR === 'A');
