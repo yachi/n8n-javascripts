@@ -36,7 +36,8 @@ node test.js
 ```
 🌱 **UK Green Energy Outlook**
 
-📈 This week: **61% renewable** 😊
+📈 This week: **61% green energy** 😊
+*(Progress bars show daily green energy %)*
 
 Mon 😍  85% █████████░
 Tue 😊  72% ███████░░░
@@ -46,10 +47,10 @@ Fri 😕  32% ███░░░░░░░
 Sat 😊  64% ██████░░░░
 Sun 😊  71% ███████░░░
 
-🏆 Best: Mon (85%)
-⚡ Lowest: Fri (32%)
+📈 Highest: Mon (85%)
+📉 Lowest: Fri (32%)
 
-💭 Good renewable energy week expected.
+💭 Good green energy week expected. High variability expected.
 ```
 
 ## Data Sources

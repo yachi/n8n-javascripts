@@ -317,7 +317,8 @@ function getProgressBar(score, width = 10) {
 let telegramMessage = `🌱 **UK Green Energy Outlook**\n\n`;
 
 // Weekly average
-telegramMessage += `📈 This week: **${avgWeekScore}% renewable** ${getRatingEmoji(avgWeekScore)}\n\n`;
+telegramMessage += `📈 This week: **${avgWeekScore}% green energy** ${getRatingEmoji(avgWeekScore)}\n`;
+telegramMessage += `*(Progress bars show daily green energy %)*\n\n`;
 
 // Daily forecast
 weeklyForecast.forEach(day => {
@@ -331,18 +332,28 @@ weeklyForecast.forEach(day => {
 
 // Best and worst days
 if (bestDay && worstDay && weeklyForecast.length > 1) {
-  telegramMessage += `\n🏆 Best: ${getDayName(bestDay.date)} (${bestDay.greenScore}%)\n`;
-  telegramMessage += `⚡ Lowest: ${getDayName(worstDay.date)} (${worstDay.greenScore}%)\n`;
+  telegramMessage += `\n📈 Highest: ${getDayName(bestDay.date)} (${bestDay.greenScore}%)\n`;
+  telegramMessage += `📉 Lowest: ${getDayName(worstDay.date)} (${worstDay.greenScore}%)\n`;
 }
 
-// Simple week summary
+// Dynamic week summary
 telegramMessage += `\n💭 `;
-if (avgWeekScore >= 60) {
-  telegramMessage += `Great week for renewables ahead!`;
-} else if (avgWeekScore >= 40) {
-  telegramMessage += `Good renewable energy week expected.`;
+const variance = bestDay && worstDay ? bestDay.greenScore - worstDay.greenScore : 0;
+if (avgWeekScore >= 70) {
+  telegramMessage += `Excellent green energy week ahead! `;
+} else if (avgWeekScore >= 50) {
+  telegramMessage += `Good green energy week expected. `;
 } else {
-  telegramMessage += `Mixed week - some good green days coming.`;
+  telegramMessage += `Mixed week with some green opportunities. `;
+}
+
+// Add variance comment
+if (variance > 40) {
+  telegramMessage += `High variability expected.`;
+} else if (variance > 20) {
+  telegramMessage += `Moderate day-to-day variation.`;
+} else if (variance > 0) {
+  telegramMessage += `Fairly consistent levels.`;
 }
 
 
