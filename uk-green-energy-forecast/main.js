@@ -314,12 +314,7 @@ function getProgressBar(score, width = 10) {
 }
 
 // Step 11: Generate Telegram message
-let telegramMessage = `🌱 **UK Green Energy Outlook**\n`;
-
-// Latest actual data
-if (latestActualScore) {
-  telegramMessage += `📊 Yesterday: **${latestActualScore.greenScore}% green energy** ${getRatingEmoji(latestActualScore.greenScore)}\n\n`;
-}
+let telegramMessage = `🌱 **UK Green Energy Outlook**\n\n`;
 
 // Weekly average
 telegramMessage += `📈 This week: **${avgWeekScore}% renewable** ${getRatingEmoji(avgWeekScore)}\n\n`;
@@ -329,8 +324,9 @@ weeklyForecast.forEach(day => {
   const dayName = getDayName(day.date);
   const emoji = getRatingEmoji(day.greenScore);
   const bar = getProgressBar(day.greenScore);
+  const paddedScore = day.greenScore.toString().padStart(3, ' ');
 
-  telegramMessage += `**${dayName}** ${emoji} ${day.greenScore}% ${bar}\n`;
+  telegramMessage += `\`${dayName} ${emoji} ${paddedScore}% ${bar}\`\n`;
 });
 
 // Best and worst days
