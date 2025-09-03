@@ -1,22 +1,22 @@
 # UK Green Energy Forecast
 
-A comprehensive n8n JavaScript script that generates 7-day UK green energy forecasts with daily ratings and visual progress bars for Telegram notifications.
+An n8n JavaScript script that generates 7-day UK green energy forecasts with emoji ratings and progress bars for Telegram notifications.
 
 ## Features
 
-✅ **7-day forecast** with daily green energy ratings  
-✅ **Visual progress bars** showing renewable percentage  
-✅ **Accurate data** using NESO (National Energy System Operator) APIs  
-✅ **Time-varying demand** patterns (18-28 GW cycles)  
-✅ **Complete wind data** (embedded + large wind farms)  
-✅ **Cross-validated** against emoncms.org patterns  
-✅ **Weekly statistics** and trend analysis  
+✅ **7-day forecast** with daily renewable energy percentages  
+✅ **Visual progress bars** showing green energy proportion  
+✅ **Real-time data** from NESO (National Energy System Operator) APIs  
+✅ **Wind and solar forecasts** from multiple data sources  
+✅ **Weekly statistics** including best/worst days and averages  
+✅ **Error handling** for API failures and data validation  
 
 ## Files
 
 - **`main.js`** - Main n8n JavaScript Code Node script
-- **`test.js`** - Standalone test script
+- **`test.js`** - Test suite
 - **`README.md`** - This documentation
+- **`AGENTS.md`** - Development guidelines
 
 ## Usage
 
@@ -24,6 +24,7 @@ A comprehensive n8n JavaScript script that generates 7-day UK green energy forec
 1. Copy the content of `main.js`
 2. Paste into an n8n JavaScript Code Node
 3. Connect to a Telegram node for messaging
+4. Schedule to run daily (recommended: 9:30 AM GMT after NESO data updates)
 
 ### For testing:
 ```bash
@@ -33,18 +34,24 @@ node test.js
 ## Sample Output
 
 ```
-📅 Daily Forecast:
-• **Wed 09-03:** ✅ **66%** ███████░░░
-  🌪️ 13785MW wind (2679MW + 11106MW)
-  ☀️ 1722MW solar | 📊 23458MW demand
+🌱 **UK Green Energy Outlook**
 
-• **Thu 09-04:** ✅ **64%** ██████░░░░
-  🌪️ 9665MW wind (1547MW + 8117MW)
-  ☀️ 2481MW solar | 📊 19114MW demand
+📊 Yesterday: **67% green energy** 😊
 
-• **Sun 09-07:** 🌟 **97%** ██████████
-  🌪️ 16528MW wind (2768MW + 13760MW)
-  ☀️ 1924MW solar | 📊 19114MW demand
+📈 This week: **61% renewable** 😊
+
+**Mon** 😍 85% █████████░
+**Tue** 😊 72% ███████░░░
+**Wed** 😊 68% ██████░░░░
+**Thu** 😐 45% ████░░░░░░
+**Fri** 😕 32% ███░░░░░░░
+**Sat** 😊 64% ██████░░░░
+**Sun** 😊 71% ███████░░░
+
+🏆 Best: Mon (85%)
+⚡ Lowest: Fri (32%)
+
+💭 Good renewable energy week expected.
 ```
 
 ## Data Sources
@@ -56,20 +63,20 @@ node test.js
 
 ## Rating System
 
-- 🌟 **80%+** Excellent (green energy dominant)
-- ✅ **60-79%** Good (strong renewable mix)
-- ⚡ **40-59%** Moderate (balanced mix)
-- ⚠️ **20-39%** Poor (fossil fuel dominant)
-- 🔴 **<20%** Very Poor (minimal renewables)
+- 😍 **80%+** Excellent (renewable energy dominant)
+- 😊 **60-79%** Good (strong renewable mix)
+- 😐 **40-59%** Moderate (balanced energy mix)
+- 😕 **20-39%** Poor (fossil fuel dominant)
+- 😞 **<20%** Very Poor (minimal renewables)
 
 ## Technical Details
 
 **Green Score Formula:** `(Embedded Wind + Large Wind + Solar) / Demand × 100`
 
-**Data Accuracy:** Cross-validated with emoncms.org to ensure realistic demand cycles and renewable percentages.
+**Data Processing:** Fetches data from 4 NESO API endpoints and calculates daily averages from half-hourly forecasts.
 
-**Update Frequency:** NESO data updates twice daily (09:00-09:15 and 12:00-12:15 GMT)
+**Update Frequency:** NESO data updates twice daily at 09:00 and 12:00 GMT.
 
 ---
 
-*Generated for UK electricity system analysis and renewable energy tracking.*
+*UK renewable energy forecasting script for n8n automation.*
