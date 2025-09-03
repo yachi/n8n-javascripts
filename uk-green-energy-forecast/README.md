@@ -62,10 +62,12 @@ Sun 😊  71% ███████░░░
 
 ## Rating System
 
-- 😍 **80%+** Excellent (renewable energy dominant)
-- 😊 **60-79%** Good (strong renewable mix)
-- 😐 **40-59%** Moderate (balanced energy mix)
-- 😕 **20-39%** Poor (fossil fuel dominant)
+- ⚡ **120%+** Major Surplus (possible negative pricing)
+- 🔋 **100-119%** Surplus (exports likely)  
+- 🟢 **80-99%** Excellent (renewable energy dominant)
+- 🟡 **60-79%** Good (strong renewable mix)
+- 🟠 **40-59%** Moderate (balanced energy mix)
+- 🔴 **20-39%** Poor (fossil fuel dominant)
 - 😞 **<20%** Very Poor (minimal renewables)
 
 ## Technical Details

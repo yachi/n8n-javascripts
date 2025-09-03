@@ -284,14 +284,18 @@ const worstDay = weeklyForecast.reduce((worst, day) =>
 
 // Step 10: Helper functions
 function getRatingEmoji(score) {
-  if (score >= 80) return "😍";
-  if (score >= 60) return "😊";
-  if (score >= 40) return "😐";
-  if (score >= 20) return "😕";
+  if (score >= 120) return "⚡";
+  if (score >= 100) return "🔋";
+  if (score >= 80) return "🟢";
+  if (score >= 60) return "🟡";
+  if (score >= 40) return "🟠";
+  if (score >= 20) return "🔴";
   return "😞";
 }
 
 function getRatingText(score) {
+  if (score >= 120) return "Major Surplus";
+  if (score >= 100) return "Surplus";
   if (score >= 80) return "Excellent";
   if (score >= 60) return "Good";
   if (score >= 40) return "Moderate";

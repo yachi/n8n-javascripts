@@ -244,23 +244,25 @@ function testHelperFunctions() {
 
     // Test getRatingEmoji (including edge cases)
     const emojiTests = [
-      { input: 90, expected: '😍', desc: 'Excellent rating (90%)' },
-      { input: 80, expected: '😍', desc: 'Excellent boundary (80%)' },
-      { input: 79, expected: '😊', desc: 'Good boundary (79%)' },
-      { input: 70, expected: '😊', desc: 'Good rating (70%)' },
-      { input: 60, expected: '😊', desc: 'Good boundary (60%)' },
-      { input: 59, expected: '😐', desc: 'Moderate boundary (59%)' },
-      { input: 50, expected: '😐', desc: 'Moderate rating (50%)' },
-      { input: 40, expected: '😐', desc: 'Moderate boundary (40%)' },
-      { input: 39, expected: '😕', desc: 'Poor boundary (39%)' },
-      { input: 30, expected: '😕', desc: 'Poor rating (30%)' },
-      { input: 20, expected: '😕', desc: 'Poor boundary (20%)' },
+      { input: 150, expected: '⚡', desc: 'Major surplus (150%)' },
+      { input: 120, expected: '⚡', desc: 'Major surplus boundary (120%)' },
+      { input: 110, expected: '🔋', desc: 'Surplus rating (110%)' },
+      { input: 100, expected: '🔋', desc: 'Surplus boundary (100%)' },
+      { input: 90, expected: '🟢', desc: 'Excellent rating (90%)' },
+      { input: 80, expected: '🟢', desc: 'Excellent boundary (80%)' },
+      { input: 79, expected: '🟡', desc: 'Good boundary (79%)' },
+      { input: 70, expected: '🟡', desc: 'Good rating (70%)' },
+      { input: 60, expected: '🟡', desc: 'Good boundary (60%)' },
+      { input: 59, expected: '🟠', desc: 'Moderate boundary (59%)' },
+      { input: 50, expected: '🟠', desc: 'Moderate rating (50%)' },
+      { input: 40, expected: '🟠', desc: 'Moderate boundary (40%)' },
+      { input: 39, expected: '🔴', desc: 'Poor boundary (39%)' },
+      { input: 30, expected: '🔴', desc: 'Poor rating (30%)' },
+      { input: 20, expected: '🔴', desc: 'Poor boundary (20%)' },
       { input: 19, expected: '😞', desc: 'Very poor boundary (19%)' },
       { input: 10, expected: '😞', desc: 'Very poor rating (10%)' },
       { input: 0, expected: '😞', desc: 'Zero rating (0%)' },
-      { input: -5, expected: '😞', desc: 'Negative rating (-5%)' },
-      { input: 100, expected: '😍', desc: 'Maximum rating (100%)' },
-      { input: 150, expected: '😍', desc: 'Above maximum (150%)' }
+      { input: -5, expected: '😞', desc: 'Negative rating (-5%)' }
     ];
 
     emojiTests.forEach(test => {
