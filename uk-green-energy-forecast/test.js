@@ -309,20 +309,19 @@ function testHelperFunctions() {
       if (!passed) allPassed = false;
     });
 
-    // Test edge cases that should cause errors
-    const errorTests = [
-      { input: -10, desc: 'Negative progress (-10%)' },
-      { input: 150, desc: 'Over progress (150%)' }
+    // Test edge cases (now handled gracefully)
+    const edgeTests = [
+      { input: -10, desc: 'Negative progress (-10%)', expectedLength: 10, expectedPattern: /^░{10}$/ },
+      { input: 150, desc: 'Over progress (150%)', expectedLength: 10, expectedPattern: /^█{10}$/ }
     ];
 
-    errorTests.forEach(test => {
-      try {
-        getProgressBar(test.input);
-        console.log(`❌ ${test.desc}: should have thrown error`);
-        allPassed = false;
-      } catch (error) {
-        console.log(`✅ ${test.desc}: correctly throws error`);
-      }
+    edgeTests.forEach(test => {
+      const result = getProgressBar(test.input);
+      const lengthOk = result.length === test.expectedLength;
+      const patternOk = test.expectedPattern.test(result);
+      const passed = lengthOk && patternOk;
+      console.log(`${passed ? '✅' : '❌'} ${test.desc}: ${result}`);
+      if (!passed) allPassed = false;
     });
 
     // Test custom width parameter

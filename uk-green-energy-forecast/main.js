@@ -306,8 +306,10 @@ function getDayName(dateStr) {
 }
 
 function getProgressBar(score, width = 10) {
-  const filled = Math.round((score / 100) * width);
-  const empty = width - filled;
+  // Ensure score is within valid range
+  const clampedScore = Math.max(0, Math.min(100, score));
+  const filled = Math.max(0, Math.min(width, Math.round((clampedScore / 100) * width)));
+  const empty = Math.max(0, width - filled);
   return '█'.repeat(filled) + '░'.repeat(empty);
 }
 
